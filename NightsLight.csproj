@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{E47E0F5B-4FBE-4644-817B-38CFEA4F23E7}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>NightsLight_Maze</RootNamespace>
-    <AssemblyName>NightsLight_Maze</AssemblyName>
+    <RootNamespace>NightsLight</RootNamespace>
+    <AssemblyName>NightsLight</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
