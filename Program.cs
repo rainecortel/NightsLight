@@ -12,7 +12,7 @@ namespace NightsLight
     static class Program
     {
         private static Thread thread;
-        public static string currentDirectory = Directory.GetCurrentDirectory();
+        public static string currentDirectory = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
 
         static void Main(string[] args)
         {

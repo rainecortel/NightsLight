@@ -36,10 +36,10 @@ namespace NightsLight
             this.Width = 980;
             this.Height = 700;
             this.FormBorderStyle = FormBorderStyle.Fixed3D;
-            this.BackgroundImage = Image.FromFile(Program.currentDirectory + "\\Assets\\Images\\Map001.png");
+            this.BackgroundImage = Image.FromFile(Program.currentDirectory + "/Assets/Images/Map001.png");
 
             // Set the sound for Level 1
-            SoundPlayer simpleSound = new SoundPlayer(Program.currentDirectory + "\\Assets\\Audio\\Town1.wav");
+            SoundPlayer simpleSound = new SoundPlayer(Program.currentDirectory + "/Assets/Audio/Town1.wav");
             simpleSound.Play();
 
             playerImages();
@@ -143,7 +143,7 @@ namespace NightsLight
             // To avoid flashing of screen
             this.DoubleBuffered = true;
             // Load the player images files to the list
-            playerMovements = Directory.GetFiles(Program.currentDirectory + "\\Assets\\Player\\", "*.png").ToList();
+            playerMovements = Directory.GetFiles(Program.currentDirectory + "/Assets/Player/", "*.png").ToList();
             player = Image.FromFile(playerMovements[0]);
         }
 
