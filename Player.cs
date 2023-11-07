@@ -10,7 +10,11 @@ namespace NightsLight
     internal class Player
     {
         private Image playerSprite;
-        private List<string> playerMovements = new List<string>();
+        private int playerHealth;
+        private int playerWidth;
+        private int playerHeight;
+        private int locX;
+        private int locY;
 
         public Player()
         { 

@@ -91,7 +91,10 @@ namespace NightsLight
 
         private void btPlay_Click(object sender, EventArgs e)
         {
-            
+            // When the "Play" button is clicked, create and show the Level1 form.
+            Level1 level1Form = new Level1();
+            level1Form.Show();
+
             // Hide game menu when loading levels.
             this.Hide();
         }
