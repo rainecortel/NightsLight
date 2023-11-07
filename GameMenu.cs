@@ -14,7 +14,7 @@ namespace NightsLight
         Button btPlay = new Button();
         Button btLeaderboards = new Button();
         Button btExit = new Button();
-        Image backgroundImage = Image.FromFile(AppDomain.CurrentDomain.BaseDirectory + "\\Assets\\Images\\Game Project BG.png"); // Get the base directory of where the file is executed to retrieve contents of Assets folder.
+        Image backgroundImage = Image.FromFile(Program.currentDirectory + "\\Assets\\Images\\Game Project BG.png"); // Get the base directory of where the file is executed to retrieve contents of Assets folder.
 
         // Constructor. Defines the initial property of the class.
         public GameMenu()

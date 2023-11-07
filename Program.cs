@@ -5,12 +5,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 
 namespace NightsLight
 {
     static class Program
     {
         private static Thread thread;
+        public static string currentDirectory = Directory.GetCurrentDirectory();
 
         static void Main(string[] args)
         {
