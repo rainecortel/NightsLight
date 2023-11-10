@@ -10,6 +10,8 @@ namespace NightsLight
 {
     internal class Level3 : Form
     {
+        private List<PictureBox> maze;
+        private List<Rectangle> mazeHitbox;
         private Rectangle screen;
         private PictureBox player;
         private Timer playerMovementTimer;
@@ -21,7 +23,7 @@ namespace NightsLight
 
             this.Text = "Night's Light (Level 3)";
             this.Width = 1000;
-            this.Height = 600;
+            this.Height = 715;
             this.FormBorderStyle = FormBorderStyle.Fixed3D;
 
             this.BackColor = Color.FromArgb(65, 65, 65);
@@ -31,14 +33,80 @@ namespace NightsLight
             // Prevent flickering of the background image.
             this.DoubleBuffered = true;
 
-            this.screen = new Rectangle(new Point(0, 0), this.Size);
+            screen = new Rectangle(new Point(0, 0), this.Size);
 
+            InitializeMaze();
             InitializePlayer();
-            InitilizeTimer();
-            InitilizeEvents();
+            InitializeTimer();
+            InitializeEvents();
 
             // Add event to catch form closing.
-            this.FormClosing += Level3_FormClosing;
+            //this.FormClosing += Level3_FormClosing;
+        }
+
+        private void InitializeMaze()
+        {
+            maze = new List<PictureBox>();
+
+            // All horizontal walls.
+            maze.Add(AddWalls(0, 225, 47, 23));
+            maze.Add(AddWalls(0, 561, 47, 23));
+            maze.Add(AddWalls(93, 90, 90, 23));
+            maze.Add(AddWalls(93, 359, 90, 23));
+            maze.Add(AddWalls(163, 494, 160, 23));
+            maze.Add(AddWalls(304, 359, 150, 23));
+            maze.Add(AddWalls(445, 158, 90, 23));
+            maze.Add(AddWalls(445, 292, 90, 23));
+            maze.Add(AddWalls(445, 560, 90, 23));
+            maze.Add(AddWalls(513, 90, 372, 23));
+            maze.Add(AddWalls(585, 425, 90, 23));
+            maze.Add(AddWalls(655, 225, 90, 23));
+            maze.Add(AddWalls(655, 560, 90, 23));
+            maze.Add(AddWalls(793, 358, 90, 23));
+            maze.Add(AddWalls(866, 225, 120, 23));
+            maze.Add(AddWalls(866, 493, 120, 23));
+
+            // All vertical walls.
+            maze.Add(AddWalls(163, 0, 23, 382)); 
+            maze.Add(AddWalls(93, 360, 23, 90));
+            maze.Add(AddWalls(163, 494, 23, 89));
+            maze.Add(AddWalls(304, 72, 23, 600));
+            maze.Add(AddWalls(445, 158, 23, 420));
+            maze.Add(AddWalls(513, 90, 23, 91));
+            maze.Add(AddWalls(655, 225, 23, 350));
+            maze.Add(AddWalls(723, 560, 23, 120));
+            maze.Add(AddWalls(866, 225, 23, 156));
+
+            mazeHitbox = AddWallCollision();
+        }
+
+        private PictureBox AddWalls(int x, int y, int w, int h)
+        {
+            PictureBox wall = new PictureBox
+            {
+                Name = "Wall",
+                Parent = this,
+                Location = new Point(x, y),
+                Width = w,
+                Height = h,
+                BackColor = Color.White
+            };
+            this.Controls.Add(wall);
+
+            return wall;
+        }
+
+        private List<Rectangle> AddWallCollision()
+        {
+            List<Rectangle> hitbox = new List<Rectangle>();
+
+            foreach (PictureBox wall in maze)
+            {
+                Rectangle rectangle = new Rectangle(wall.Location.X, wall.Location.Y, wall.Width, wall.Height);
+                hitbox.Add(rectangle);
+            }
+
+            return hitbox;
         }
 
         private void InitializePlayer()
@@ -49,16 +117,17 @@ namespace NightsLight
             player = new PictureBox
             {
                 Name = "Player",
+                Parent = this,
                 SizeMode = PictureBoxSizeMode.AutoSize,
                 Location = new Point(0, 0),
                 Image = Image.FromFile(Program.currentDirectory + "/Assets/Player/character_01.png"),
                 BackColor = Color.Transparent
             };
-            // Adds the player sprite to the screen.
-            this.Controls.Add(player);
+            this.Controls.Add(player); // Adds the player sprite to the screen.
+            //player.BringToFront(); // Brings player's PictureBox to the front.
         }
         
-        private void InitilizeTimer()
+        private void InitializeTimer()
         {
             playerMovementTimer = new Timer();
             playerMovementTimer.Tick += new EventHandler(MovementEvents);
@@ -68,28 +137,28 @@ namespace NightsLight
 
         private void MovementEvents(object sender, EventArgs e)
         {
-            Point newPlayerMovement = player.Location;
-
-            // Key events in relation to playerMovement that will be used to reference player sprite movement in screen.
-            if (playerMovement == "UP")
-            {
-                newPlayerMovement.Y = player.Location.Y - playerSpeed;
-            }
-            else if (playerMovement == "DOWN")
-            {
-                newPlayerMovement.Y = player.Location.Y + playerSpeed;
-            }
-            else if (playerMovement == "LEFT")
-            {
-                newPlayerMovement.X = player.Location.X - playerSpeed;
-            }
-            else if (playerMovement == "RIGHT")
-            {
-                newPlayerMovement.X = player.Location.X + playerSpeed;
-            }
-
             if (playerMovement != "")
             {
+                Point newPlayerMovement = player.Location;
+
+                // Key events in relation to playerMovement that will be used to reference player sprite movement in screen.
+                if (playerMovement == "UP")
+                {
+                    newPlayerMovement.Y = player.Location.Y - playerSpeed;
+                }
+                else if (playerMovement == "DOWN")
+                {
+                    newPlayerMovement.Y = player.Location.Y + playerSpeed;
+                }
+                else if (playerMovement == "LEFT")
+                {
+                    newPlayerMovement.X = player.Location.X - playerSpeed;
+                }
+                else if (playerMovement == "RIGHT")
+                {
+                    newPlayerMovement.X = player.Location.X + playerSpeed;
+                }
+
                 // Check if player movement is detectable isnide form screen.
                 if (IsPlayerInsideForm(newPlayerMovement))
                 {
@@ -106,11 +175,21 @@ namespace NightsLight
             return (screen.Contains(p)) && ((p.X + player.Width) <= (screen.Width - 10)) && ((p.Y + player.Height) <= (screen.Height - player.Height + 10));
         }
 
-        private void InitilizeEvents()
+        private bool IsCollision(Point p)
         {
+            // Define player's new hitbox.
+            Rectangle playerHitbox = new Rectangle(player.Location.X, player.Location.Y, player.Width, player.Height);
+
+            return true;
+        }
+
+        private void InitializeEvents()
+        {
+            // Add event handler for keypress.
             this.KeyDown += new KeyEventHandler(KeyDownMovement);
             KeyPreview = true;
 
+            // Add event handler so keypress is not infinite.
             this.KeyUp += new KeyEventHandler(KeyUpMovements);
         }
 

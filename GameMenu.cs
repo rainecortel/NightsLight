@@ -72,7 +72,7 @@ namespace NightsLight
             btExit.ForeColor = Color.Transparent;
             btExit.BackColor = Color.Transparent;
             btExit.FlatAppearance.BorderSize = 0;
-            this.Controls.Add(btExit);
+            this.Controls.Add(btExit);            
 
             btPlay.Click += new EventHandler(btPlay_Click);
             btLeaderboards.Click += new EventHandler(btLeaderboards_Click);
