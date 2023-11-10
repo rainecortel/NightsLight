@@ -10,12 +10,11 @@ namespace NightsLight
 {
     internal class Level3 : Form
     {
+        private Rectangle screen;
         private PictureBox player;
         private Timer playerMovementTimer;
-        private bool _moveUp, _moveDown, _moveLeft, _moveRight;
         private string playerMovement;
-        private int playerSpeed = 5;
-
+        private int playerSpeed = 8;
         public Level3()
         {
             Console.WriteLine(Program.GetCurrentTime() + " - Level 3 is loaded.");
@@ -26,6 +25,13 @@ namespace NightsLight
             this.FormBorderStyle = FormBorderStyle.Fixed3D;
 
             this.BackColor = Color.FromArgb(65, 65, 65);
+            this.BackgroundImage = Image.FromFile(Program.currentDirectory + "/Assets/Images/Level3_Map_01.png");
+            this.BackgroundImageLayout = ImageLayout.Stretch;
+
+            // Prevent flickering of the background image.
+            this.DoubleBuffered = true;
+
+            this.screen = new Rectangle(new Point(0, 0), this.Size);
 
             InitializePlayer();
             InitilizeTimer();
@@ -37,12 +43,16 @@ namespace NightsLight
 
         private void InitializePlayer()
         {
+            // Initialize player movement.
+            playerMovement = "";
+
             player = new PictureBox
             {
                 Name = "Player",
                 SizeMode = PictureBoxSizeMode.AutoSize,
                 Location = new Point(0, 0),
-                Image = Image.FromFile(Program.currentDirectory + "/Assets/Player/character_01.png")
+                Image = Image.FromFile(Program.currentDirectory + "/Assets/Player/character_01.png"),
+                BackColor = Color.Transparent
             };
             // Adds the player sprite to the screen.
             this.Controls.Add(player);
@@ -58,29 +68,49 @@ namespace NightsLight
 
         private void MovementEvents(object sender, EventArgs e)
         {
+            Point newPlayerMovement = player.Location;
+
             // Key events in relation to playerMovement that will be used to reference player sprite movement in screen.
             if (playerMovement == "UP")
             {
-                player.Top -= playerSpeed;
+                newPlayerMovement.Y = player.Location.Y - playerSpeed;
             }
-            if (playerMovement == "DOWN")
+            else if (playerMovement == "DOWN")
             {
-                player.Top += playerSpeed;
+                newPlayerMovement.Y = player.Location.Y + playerSpeed;
             }
-            if (playerMovement == "LEFT")
+            else if (playerMovement == "LEFT")
             {
-                player.Left -= playerSpeed;
+                newPlayerMovement.X = player.Location.X - playerSpeed;
             }
-            if (playerMovement == "RIGHT")
+            else if (playerMovement == "RIGHT")
             {
-                player.Left += playerSpeed;
+                newPlayerMovement.X = player.Location.X + playerSpeed;
             }
+
+            if (playerMovement != "")
+            {
+                // Check if player movement is detectable isnide form screen.
+                if (IsPlayerInsideForm(newPlayerMovement))
+                {
+                    player.Location = newPlayerMovement;
+                }
+            }
+          
+            // Causes the image to be redrawn every movement.
+            //this.Invalidate();
+        }
+
+        private bool IsPlayerInsideForm(Point p)
+        {
+            return (screen.Contains(p)) && ((p.X + player.Width) <= (screen.Width - 10)) && ((p.Y + player.Height) <= (screen.Height - player.Height + 10));
         }
 
         private void InitilizeEvents()
         {
             this.KeyDown += new KeyEventHandler(KeyDownMovement);
             KeyPreview = true;
+
             this.KeyUp += new KeyEventHandler(KeyUpMovements);
         }
 
@@ -88,24 +118,9 @@ namespace NightsLight
         {
             // Enable player movement time to allow moving.
             playerMovementTimer.Enabled = true;
+            playerMovement = "";
 
             // Key press events to be remembered.
-            switch (e.KeyCode)
-            {
-                case Keys.Up:
-                    _moveUp = true;
-                    break;
-                case Keys.Down:
-                    _moveDown = true;
-                    break;
-                case Keys.Left:
-                    _moveLeft = true;
-                    break;
-                case Keys.Right:
-                    _moveRight = true;
-                    break;
-            }
-
             if (e.KeyCode == Keys.Up)
             {
                 playerMovement = "UP";
