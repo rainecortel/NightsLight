@@ -11,37 +11,55 @@ namespace NightsLight
     internal class Level3 : Form
     {
         private List<PictureBox> maze;
-        private List<Rectangle> mazeHitbox;
-        private Rectangle screen;
+        private List<Rectangle> hitbox;
         private PictureBox player;
         private Timer playerMovementTimer;
-        private string playerMovement;
+
+        private bool moveUp, moveDown, moveLeft, moveRight;
         private int playerSpeed = 8;
+
         public Level3()
         {
             Console.WriteLine(Program.GetCurrentTime() + " - Level 3 is loaded.");
 
-            this.Text = "Night's Light (Level 3)";
-            this.Width = 1000;
-            this.Height = 715;
-            this.FormBorderStyle = FormBorderStyle.Fixed3D;
+            this.Text = "Night's Light(Level 3)";
 
+            this.AutoScaleMode = AutoScaleMode.None;
+            this.AutoScroll = false;
+            this.AutoSize = false;
             this.BackColor = Color.FromArgb(65, 65, 65);
             this.BackgroundImage = Image.FromFile(Program.currentDirectory + "/Assets/Images/Level3_Map_01.png");
             this.BackgroundImageLayout = ImageLayout.Stretch;
-
-            // Prevent flickering of the background image.
+            this.CausesValidation = true;
+            this.ControlBox = true;
             this.DoubleBuffered = true;
+            this.Enabled = true;
+            this.FormBorderStyle = FormBorderStyle.Fixed3D;
+            this.KeyPreview = false;
+            this.Location = new Point(0, 0);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.Size = new Size(1000, 715);
+            this.StartPosition = FormStartPosition.WindowsDefaultLocation;
+            this.WindowState = FormWindowState.Normal;
 
-            screen = new Rectangle(new Point(0, 0), this.Size);
-
-            InitializeMaze();
             InitializePlayer();
+            InitializeMaze();
             InitializeTimer();
             InitializeEvents();
+        }
 
-            // Add event to catch form closing.
-            //this.FormClosing += Level3_FormClosing;
+        private void InitializePlayer()
+        {
+            player = new PictureBox
+            {
+                Name = "player",
+                SizeMode = PictureBoxSizeMode.AutoSize,
+                Location = new Point(0, 0),
+                Image = Image.FromFile(Program.currentDirectory + "/Assets/Player/character_01.png"),
+                BackColor = Color.Red
+            };
+            this.Controls.Add(player); // Adds the player sprite to the screen.
         }
 
         private void InitializeMaze()
@@ -76,162 +94,154 @@ namespace NightsLight
             maze.Add(AddWalls(655, 225, 23, 350));
             maze.Add(AddWalls(723, 560, 23, 120));
             maze.Add(AddWalls(866, 225, 23, 156));
-
-            mazeHitbox = AddWallCollision();
         }
 
         private PictureBox AddWalls(int x, int y, int w, int h)
         {
             PictureBox wall = new PictureBox
             {
-                Name = "Wall",
-                Parent = this,
+                Name = "wall",
+                Tag = "object",
+                SizeMode = PictureBoxSizeMode.Normal,
                 Location = new Point(x, y),
-                Width = w,
-                Height = h,
-                BackColor = Color.White
+                Size = new Size(w, h),
+                BackColor = Color.Transparent
             };
             this.Controls.Add(wall);
 
             return wall;
         }
-
-        private List<Rectangle> AddWallCollision()
-        {
-            List<Rectangle> hitbox = new List<Rectangle>();
-
-            foreach (PictureBox wall in maze)
-            {
-                Rectangle rectangle = new Rectangle(wall.Location.X, wall.Location.Y, wall.Width, wall.Height);
-                hitbox.Add(rectangle);
-            }
-
-            return hitbox;
-        }
-
-        private void InitializePlayer()
-        {
-            // Initialize player movement.
-            playerMovement = "";
-
-            player = new PictureBox
-            {
-                Name = "Player",
-                Parent = this,
-                SizeMode = PictureBoxSizeMode.AutoSize,
-                Location = new Point(0, 0),
-                Image = Image.FromFile(Program.currentDirectory + "/Assets/Player/character_01.png"),
-                BackColor = Color.Transparent
-            };
-            this.Controls.Add(player); // Adds the player sprite to the screen.
-            //player.BringToFront(); // Brings player's PictureBox to the front.
-        }
         
         private void InitializeTimer()
         {
             playerMovementTimer = new Timer();
-            playerMovementTimer.Tick += new EventHandler(MovementEvents);
             playerMovementTimer.Interval = 20; // Lower interval equals faster movement.
-            playerMovementTimer.Start();
+            playerMovementTimer.Tick += new EventHandler(playerMovementTimerEvent);
         }
 
-        private void MovementEvents(object sender, EventArgs e)
+        private void playerMovementTimerEvent(object sender, EventArgs e)
         {
-            if (playerMovement != "")
+            // Make a new PictureBox to detect the change in location and used for collision testing.
+            PictureBox playerMovement = new PictureBox
             {
-                Point newPlayerMovement = player.Location;
+                Location = player.Location,
+                Size = player.Size,
+                BackColor = Color.Black
+            };
+            playerMovement.BringToFront();
+            this.Controls.Add(playerMovement);
 
-                // Key events in relation to playerMovement that will be used to reference player sprite movement in screen.
-                if (playerMovement == "UP")
-                {
-                    newPlayerMovement.Y = player.Location.Y - playerSpeed;
-                }
-                else if (playerMovement == "DOWN")
-                {
-                    newPlayerMovement.Y = player.Location.Y + playerSpeed;
-                }
-                else if (playerMovement == "LEFT")
-                {
-                    newPlayerMovement.X = player.Location.X - playerSpeed;
-                }
-                else if (playerMovement == "RIGHT")
-                {
-                    newPlayerMovement.X = player.Location.X + playerSpeed;
-                }
-
-                // Check if player movement is detectable isnide form screen.
-                if (IsPlayerInsideForm(newPlayerMovement))
-                {
-                    player.Location = newPlayerMovement;
-                }
+            if (moveUp && player.Top > 0)
+            {
+                playerMovement.Top -= playerSpeed;
             }
-          
+            if(moveDown && player.Top < 612)
+            {
+                playerMovement.Top += playerSpeed;
+            }
+            if(moveLeft && player.Left > 0)
+            {
+                playerMovement.Left -= playerSpeed;
+            }
+            if(moveRight && player.Left < 928)
+            {
+                playerMovement.Left += playerSpeed;
+            }
+
+            // If collision PictureBox did not collide with any elements, pass its Location to the player.
+            if(IsCollision(playerMovement) == false)
+            {
+                player.Location = playerMovement.Location;
+            }
+
             // Causes the image to be redrawn every movement.
             //this.Invalidate();
         }
 
-        private bool IsPlayerInsideForm(Point p)
+        private bool IsCollision(PictureBox p)
         {
-            return (screen.Contains(p)) && ((p.X + player.Width) <= (screen.Width - 10)) && ((p.Y + player.Height) <= (screen.Height - player.Height + 10));
-        }
+            var hit = false;
 
-        private bool IsCollision(Point p)
-        {
-            // Define player's new hitbox.
-            Rectangle playerHitbox = new Rectangle(player.Location.X, player.Location.Y, player.Width, player.Height);
+            foreach (Control c in this.Controls)
+            {
+                if ((c is PictureBox) && ((string)c.Tag == "object"))
+                {
+                    if (p.Bounds.IntersectsWith(c.Bounds))
+                    {
+                        hit = true;
+                    }
+                }
+            }
 
-            return true;
+            return hit;
         }
 
         private void InitializeEvents()
         {
             // Add event handler for keypress.
-            this.KeyDown += new KeyEventHandler(KeyDownMovement);
-            KeyPreview = true;
+            this.KeyDown += KeyDownEvent;
 
             // Add event handler so keypress is not infinite.
-            this.KeyUp += new KeyEventHandler(KeyUpMovements);
+            this.KeyUp += KeyUpEvent;
+
+            // Add event to catch form closing.
+            //this.FormClosing += FormClosingEvent;
         }
 
-        private void KeyDownMovement(object sender, KeyEventArgs e)
+        private void KeyDownEvent(object sender, KeyEventArgs e)
         {
             // Enable player movement time to allow moving.
-            playerMovementTimer.Enabled = true;
-            playerMovement = "";
+            playerMovementTimer.Enabled = true; 
 
-            // Key press events to be remembered.
-            if (e.KeyCode == Keys.Up)
+            // Key press events to trigger.
+            if(e.KeyCode == Keys.Up)
             {
-                playerMovement = "UP";
+                moveUp = true;
             }
-            if (e.KeyCode == Keys.Down)
+            if(e.KeyCode == Keys.Down)
             {
-                playerMovement = "DOWN";
+                moveDown = true;
             }
-            if (e.KeyCode == Keys.Left)
+            if(e.KeyCode == Keys.Left)
             {
-                playerMovement = "LEFT";
+                moveLeft = true;
             }
-            if (e.KeyCode == Keys.Right)
+            if(e.KeyCode == Keys.Right)
             {
-                playerMovement = "RIGHT";
+                moveRight = true;
             }
-            e.Handled = true;
         }
 
         // Used to prevent infinite movement in the direction pressed during a key press event.
-        private void KeyUpMovements(object sender, KeyEventArgs e)
+        private void KeyUpEvent(object sender, KeyEventArgs e)
         {
             // When key is released, movement stops.
             playerMovementTimer.Enabled = false;
+
+            if (e.KeyCode == Keys.Up)
+            {
+                moveUp = false;
+            }
+            if (e.KeyCode == Keys.Down)
+            {
+                moveDown = false;
+            }
+            if (e.KeyCode == Keys.Left)
+            {
+                moveLeft = false;
+            }
+            if (e.KeyCode == Keys.Right)
+            {
+                moveRight = false;
+            }
         }
 
         // X button has been clicked.
-        private void Level3_FormClosing(object sender, FormClosingEventArgs e)
+        private void FormClosingEvent(object sender, FormClosingEventArgs e)
         {
             var x = MessageBox.Show(this, "Your progress will not be saved and you will return to the main menu. Are you sure you want to exit?", "Exiting Level 3", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
-            if (x == DialogResult.Yes)
+            if(x == DialogResult.Yes)
             {
                 Console.WriteLine(Program.GetCurrentTime() + " - Level 3 is closed.");
 
