@@ -57,7 +57,7 @@ namespace NightsLight
                 SizeMode = PictureBoxSizeMode.AutoSize,
                 Location = new Point(0, 0),
                 Image = Image.FromFile(Program.currentDirectory + "/Assets/Player/character_01.png"),
-                BackColor = Color.Red
+                BackColor = Color.Transparent
             };
             this.Controls.Add(player); // Adds the player sprite to the screen.
         }
@@ -71,7 +71,7 @@ namespace NightsLight
             maze.Add(AddWalls(0, 561, 47, 23));
             maze.Add(AddWalls(93, 90, 90, 23));
             maze.Add(AddWalls(93, 359, 90, 23));
-            maze.Add(AddWalls(163, 494, 160, 23));
+            maze.Add(AddWalls(163, 561, 160, 23));
             maze.Add(AddWalls(304, 359, 150, 23));
             maze.Add(AddWalls(445, 158, 90, 23));
             maze.Add(AddWalls(445, 292, 90, 23));
@@ -82,18 +82,17 @@ namespace NightsLight
             maze.Add(AddWalls(655, 560, 90, 23));
             maze.Add(AddWalls(793, 358, 90, 23));
             maze.Add(AddWalls(866, 225, 120, 23));
-            maze.Add(AddWalls(866, 493, 120, 23));
+            maze.Add(AddWalls(862, 493, 120, 23));
 
             // All vertical walls.
             maze.Add(AddWalls(163, 0, 23, 382)); 
             maze.Add(AddWalls(93, 360, 23, 90));
-            maze.Add(AddWalls(163, 494, 23, 89));
             maze.Add(AddWalls(304, 72, 23, 600));
             maze.Add(AddWalls(445, 158, 23, 420));
             maze.Add(AddWalls(513, 90, 23, 91));
-            maze.Add(AddWalls(655, 225, 23, 350));
+            maze.Add(AddWalls(652, 225, 23, 358));
             maze.Add(AddWalls(723, 560, 23, 120));
-            maze.Add(AddWalls(866, 225, 23, 156));
+            maze.Add(AddWalls(862, 225, 23, 156));
         }
 
         private PictureBox AddWalls(int x, int y, int w, int h)
