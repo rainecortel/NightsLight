@@ -126,10 +126,9 @@ namespace NightsLight
             {
                 Location = player.Location,
                 Size = player.Size,
-                BackColor = Color.Black
+                BackColor = Color.Transparent
             };
-            playerMovement.BringToFront();
-            this.Controls.Add(playerMovement);
+            this.Controls.Add(playerMovement); // Add PB to controls.
 
             if (moveUp && player.Top > 0)
             {
@@ -153,6 +152,8 @@ namespace NightsLight
             {
                 player.Location = playerMovement.Location;
             }
+
+            this.Controls.Remove(playerMovement); // Remove PB after using it.
 
             // Causes the image to be redrawn every movement.
             //this.Invalidate();
