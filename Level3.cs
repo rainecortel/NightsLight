@@ -32,7 +32,6 @@ namespace NightsLight
             this.BackColor = Color.FromArgb(65, 65, 65);
             this.BackgroundImageLayout = ImageLayout.Stretch;
             this.CausesValidation = true;
-            this.ControlBox = true;
             this.DoubleBuffered = true;
             this.Enabled = true;
             this.FormBorderStyle = FormBorderStyle.Fixed3D;
@@ -41,22 +40,34 @@ namespace NightsLight
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Size = new Size(1000, 715);
-            this.StartPosition = FormStartPosition.WindowsDefaultLocation;
+            this.StartPosition = FormStartPosition.Manual;
             this.WindowState = FormWindowState.Normal;
 
             // Define maze initial attributes.
             this.maze = new List<PictureBox>();
             this.mazeLevel = 1;
 
+            InitializePlayer();
             LoadMaze();
             InitializeTimer();
             InitializeEvents();
         }
 
+        private void InitializePlayer()
+        {
+            player = new PictureBox
+            {
+                Name = "player",
+                SizeMode = PictureBoxSizeMode.AutoSize,
+                Location = new Point(0, 0),
+                Image = Image.FromFile(Program.currentDirectory + "/Assets/Player/character_01.png"),
+                BackColor = Color.DarkBlue
+            };
+            this.Controls.Add(player); // Adds the player sprite to the screen.
+        }
+
         private void LoadMaze()
         {
-            InitializePlayer();
-
             switch (mazeLevel)
             {
                 case 1:
@@ -90,19 +101,6 @@ namespace NightsLight
                 default:
                     break;
             }
-        }
-
-        private void InitializePlayer()
-        {
-            player = new PictureBox
-            {
-                Name = "player",
-                SizeMode = PictureBoxSizeMode.AutoSize,
-                Location = new Point(0, 0),
-                Image = Image.FromFile(Program.currentDirectory + "/Assets/Player/character_01.png"),
-                BackColor = Color.Transparent
-            };
-            this.Controls.Add(player); // Adds the player sprite to the screen.
         }
 
         private PictureBox AddWalls(int x, int y, int w, int h)
@@ -175,7 +173,14 @@ namespace NightsLight
             // If collision PictureBox did not collide with any elements, pass its Location to the player.
             if(IsCollision(playerMovement) == false)
             {
-                player.Location = playerMovement.Location;
+                if (maze.Count == 0)
+                {
+                    this.player.Location = new Point(0, 0);
+                }
+                else
+                {
+                    player.Location = playerMovement.Location;
+                }
             }
 
             this.Controls.Remove(playerMovement); // Remove PB after using it.
@@ -192,6 +197,7 @@ namespace NightsLight
                     if (p.Bounds.IntersectsWith(c.Bounds))
                     {
                         hit = true;
+                        break;
                     }
                 }
                 if ((c is PictureBox) && ((string)c.Tag == "goal"))
@@ -209,8 +215,6 @@ namespace NightsLight
                             this.Controls.RemoveAt(i);
                         }
 
-                        player.Left = 1;
-                        player.Top = 1;
                         LoadMaze();
 
                         break;
