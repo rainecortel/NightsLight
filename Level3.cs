@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -11,10 +12,10 @@ namespace NightsLight
     internal class Level3 : Form
     {
         private List<PictureBox> maze;
-        private List<Rectangle> hitbox;
         private PictureBox player;
         private Timer playerMovementTimer;
 
+        private int mazeLevel;
         private bool moveUp, moveDown, moveLeft, moveRight;
         private int playerSpeed = 8;
 
@@ -22,13 +23,13 @@ namespace NightsLight
         {
             Console.WriteLine(Program.GetCurrentTime() + " - Level 3 is loaded.");
 
+            // Define form properties.
             this.Text = "Night's Light(Level 3)";
 
             this.AutoScaleMode = AutoScaleMode.None;
             this.AutoScroll = false;
             this.AutoSize = false;
             this.BackColor = Color.FromArgb(65, 65, 65);
-            this.BackgroundImage = Image.FromFile(Program.currentDirectory + "/Assets/Images/Level3_Map_01.png");
             this.BackgroundImageLayout = ImageLayout.Stretch;
             this.CausesValidation = true;
             this.ControlBox = true;
@@ -43,10 +44,52 @@ namespace NightsLight
             this.StartPosition = FormStartPosition.WindowsDefaultLocation;
             this.WindowState = FormWindowState.Normal;
 
-            InitializePlayer();
-            InitializeMaze();
+            // Define maze initial attributes.
+            this.maze = new List<PictureBox>();
+            this.mazeLevel = 1;
+
+            LoadMaze();
             InitializeTimer();
             InitializeEvents();
+        }
+
+        private void LoadMaze()
+        {
+            InitializePlayer();
+
+            switch (mazeLevel)
+            {
+                case 1:
+                    this.BackgroundImage = Image.FromFile(Program.currentDirectory + "/Assets/Images/Level3_Map_01.png");
+
+                    // Create a multiple PictureBox items for each wall in the drawn map.
+                    List<int[]> walls = new List<int[]>
+                    {
+                        new int[]{0, 225, 47, 23}, new int[]{0, 561, 47, 23}, new int[]{93, 90, 90, 23}, new int[]{93, 359, 90, 23},
+                        new int[]{163, 561, 160, 23}, new int[]{304, 359, 150, 23}, new int[]{445, 158, 90, 23}, new int[]{445, 292, 90, 23},
+                        new int[]{445, 560, 90, 23}, new int[]{513, 90, 372, 23}, new int[]{585, 425, 90, 23}, new int[]{655, 225, 90, 23},
+                        new int[]{655, 560, 90, 23}, new int[]{793, 358, 90, 23}, new int[]{866, 225, 120, 23}, new int[]{862, 493, 120, 23},
+                        new int[]{163, 0, 23, 382}, new int[]{93, 360, 23, 90}, new int[]{304, 72, 23, 600}, new int[]{445, 158, 23, 420},
+                        new int[]{513, 90, 23, 91}, new int[]{652, 225, 23, 358}, new int[]{723, 560, 23, 120}, new int[]{862, 225, 23, 156}
+                     };
+
+                    // Add walls.
+                    foreach (int[] w in walls)
+                    {
+                        maze.Add(AddWalls(w[0], w[1], w[2], w[3]));
+                    }
+
+                    // Add level goal.
+                    maze.Add(AddGoal(940, 600, 50, 70));
+
+                    break;
+                case 2:
+                    this.BackgroundImage = Image.FromFile(Program.currentDirectory + "/Assets/Images/Level3_Map_02.png");
+
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void InitializePlayer()
@@ -62,55 +105,38 @@ namespace NightsLight
             this.Controls.Add(player); // Adds the player sprite to the screen.
         }
 
-        private void InitializeMaze()
-        {
-            maze = new List<PictureBox>();
-
-            // All horizontal walls.
-            maze.Add(AddWalls(0, 225, 47, 23));
-            maze.Add(AddWalls(0, 561, 47, 23));
-            maze.Add(AddWalls(93, 90, 90, 23));
-            maze.Add(AddWalls(93, 359, 90, 23));
-            maze.Add(AddWalls(163, 561, 160, 23));
-            maze.Add(AddWalls(304, 359, 150, 23));
-            maze.Add(AddWalls(445, 158, 90, 23));
-            maze.Add(AddWalls(445, 292, 90, 23));
-            maze.Add(AddWalls(445, 560, 90, 23));
-            maze.Add(AddWalls(513, 90, 372, 23));
-            maze.Add(AddWalls(585, 425, 90, 23));
-            maze.Add(AddWalls(655, 225, 90, 23));
-            maze.Add(AddWalls(655, 560, 90, 23));
-            maze.Add(AddWalls(793, 358, 90, 23));
-            maze.Add(AddWalls(866, 225, 120, 23));
-            maze.Add(AddWalls(862, 493, 120, 23));
-
-            // All vertical walls.
-            maze.Add(AddWalls(163, 0, 23, 382)); 
-            maze.Add(AddWalls(93, 360, 23, 90));
-            maze.Add(AddWalls(304, 72, 23, 600));
-            maze.Add(AddWalls(445, 158, 23, 420));
-            maze.Add(AddWalls(513, 90, 23, 91));
-            maze.Add(AddWalls(652, 225, 23, 358));
-            maze.Add(AddWalls(723, 560, 23, 120));
-            maze.Add(AddWalls(862, 225, 23, 156));
-        }
-
         private PictureBox AddWalls(int x, int y, int w, int h)
         {
             PictureBox wall = new PictureBox
             {
                 Name = "wall",
-                Tag = "object",
+                Tag = "wall",
                 SizeMode = PictureBoxSizeMode.Normal,
                 Location = new Point(x, y),
                 Size = new Size(w, h),
-                BackColor = Color.Transparent
+                BackColor = Color.Black
             };
             this.Controls.Add(wall);
 
             return wall;
         }
-        
+
+        private PictureBox AddGoal(int x, int y, int w, int h)
+        {
+            PictureBox goal = new PictureBox
+            {
+                Name = "goal",
+                Tag = "goal",
+                SizeMode = PictureBoxSizeMode.Normal,
+                Location = new Point(x, y),
+                Size = new Size(w, h),
+                BackColor = Color.Red
+            };
+            this.Controls.Add(goal);
+
+            return goal;
+        }
+
         private void InitializeTimer()
         {
             playerMovementTimer = new Timer();
@@ -153,9 +179,6 @@ namespace NightsLight
             }
 
             this.Controls.Remove(playerMovement); // Remove PB after using it.
-
-            // Causes the image to be redrawn every movement.
-            //this.Invalidate();
         }
 
         private bool IsCollision(PictureBox p)
@@ -164,16 +187,43 @@ namespace NightsLight
 
             foreach (Control c in this.Controls)
             {
-                if ((c is PictureBox) && ((string)c.Tag == "object"))
+                if ((c is PictureBox) && ((string)c.Tag == "wall"))
                 {
                     if (p.Bounds.IntersectsWith(c.Bounds))
                     {
                         hit = true;
                     }
                 }
+                if ((c is PictureBox) && ((string)c.Tag == "goal"))
+                {
+                    if (p.Bounds.IntersectsWith(c.Bounds))
+                    {
+                        //SoundPlayer simpleSound = new SoundPlayer(Program.currentDirectory + "/Assets/Audio/LevelComplete.wav");
+                        //simpleSound.Play();
+
+                        mazeLevel += 1;
+                        maze.RemoveAll(isWall);
+
+                        for(int i = this.Controls.Count - 1; i > 0; i--)
+                        {
+                            this.Controls.RemoveAt(i);
+                        }
+
+                        player.Left = 1;
+                        player.Top = 1;
+                        LoadMaze();
+
+                        break;
+                    }
+                }
             }
 
             return hit;
+        }
+
+        private bool isWall(PictureBox pb)
+        {
+            return (string)pb.Tag != "player";
         }
 
         private void InitializeEvents()
