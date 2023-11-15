@@ -16,8 +16,8 @@ namespace NightsLight
         private Timer playerMovementTimer;
 
         private int mazeLevel;
-        private bool moveUp, moveDown, moveLeft, moveRight;
-        private int playerSpeed = 8;
+        private bool moveUp, moveDown, moveLeft, moveRight, changedLevel, slowTriggered;
+        private int playerSpeed;
 
         public Level3()
         {
@@ -46,6 +46,9 @@ namespace NightsLight
             // Define maze initial attributes.
             this.maze = new List<PictureBox>();
             this.mazeLevel = 1;
+            this.playerSpeed = 8;
+            this.changedLevel = false;
+            this.slowTriggered = false;
 
             InitializePlayer();
             LoadMaze();
@@ -68,13 +71,15 @@ namespace NightsLight
 
         private void LoadMaze()
         {
+            List<int[]> walls = new List<int[]>();
+
             switch (mazeLevel)
             {
                 case 1:
                     this.BackgroundImage = Image.FromFile(Program.currentDirectory + "/Assets/Images/Level3_Map_01.png");
 
                     // Create a multiple PictureBox items for each wall in the drawn map.
-                    List<int[]> walls = new List<int[]>
+                    walls = new List<int[]>
                     {
                         new int[]{0, 225, 47, 23}, new int[]{0, 561, 47, 23}, new int[]{93, 90, 90, 23}, new int[]{93, 359, 90, 23},
                         new int[]{163, 561, 160, 23}, new int[]{304, 359, 150, 23}, new int[]{445, 158, 90, 23}, new int[]{445, 292, 90, 23},
@@ -84,22 +89,50 @@ namespace NightsLight
                         new int[]{513, 90, 23, 91}, new int[]{652, 225, 23, 358}, new int[]{723, 560, 23, 120}, new int[]{862, 225, 23, 156}
                      };
 
-                    // Add walls.
-                    foreach (int[] w in walls)
-                    {
-                        maze.Add(AddWalls(w[0], w[1], w[2], w[3]));
-                    }
+                    // Add level traps.
+                    maze.Add(AddTraps(230, 600, 50, 75, "slow"));
+                    maze.Add(AddTraps(900, 255, 80, 70, "slow"));
 
                     // Add level goal.
-                    maze.Add(AddGoal(940, 600, 50, 70));
+                    maze.Add(AddGoal(960, 600, 20, 70));
 
                     break;
                 case 2:
                     this.BackgroundImage = Image.FromFile(Program.currentDirectory + "/Assets/Images/Level3_Map_02.png");
+                    this.player.Location = new Point(0, 0);
+                    changedLevel = true;
+
+                    walls = new List<int[]>
+                    {
+                        new int[]{455, 0, 19, 80}, new int[]{553, 0, 19, 170}, new int[]{356, 65, 19, 300}, new int[]{797, 65, 19, 340},
+                        new int[]{161, 162, 19, 245}, new int[]{62, 259, 19, 300}, new int[]{308, 352, 19, 60}, new int[]{505, 352, 19, 105},
+                        new int[]{553, 257, 19, 105}, new int[]{699, 257, 19, 250}, new int[]{407, 449, 19, 105}, new int[]{308, 497, 19, 56},
+                        new int[]{601, 497, 19, 105}, new int[]{797, 497, 19, 105}, new int[]{896, 497, 19, 105}, new int[]{161, 591, 19, 82}, 
+                        new int[]{261, 637, 19, 40}, new int[]{699, 591, 19, 82}, new int[]{65, 65, 310, 19}, new int[]{65, 161, 218, 19}, 
+                        new int[]{356, 161, 216, 19}, new int[]{653, 161, 262, 19}, new int[]{653, 65, 163, 19}, new int[]{0, 257, 81, 19}, 
+                        new int[]{0, 300, 81, 23}, new int[]{261, 257, 114, 19}, new int[]{458, 257, 114, 19}, new int[]{653, 257, 65, 19}, 
+                        new int[]{898, 300, 82, 19}, new int[]{161, 398, 166, 19}, new int[]{308, 352, 67, 19}, new int[]{505, 352, 113, 19}, 
+                        new int[]{797, 398, 67, 19}, new int[]{161, 492, 166, 19}, new int[]{308, 539, 118, 19}, new int[]{407, 449, 117, 19},
+                        new int[]{505, 591, 115, 19}, new int[]{797, 591, 118, 19}, new int[]{601, 492, 215, 19}, new int[]{896, 492, 90, 19},
+                     };
+
+                    maze.Add(AddTraps(482, 185, 66, 66, "slow"));
+                    maze.Add(AddTraps(664, 0, 91, 65, "reset"));
+
+                    maze.Add(AddGoal(965, 238, 20, 53));
 
                     break;
                 default:
                     break;
+            }
+
+            if(walls.Count > 0)
+            {
+                // Add walls.
+                foreach (int[] w in walls)
+                {
+                    maze.Add(AddWalls(w[0], w[1], w[2], w[3]));
+                }
             }
         }
 
@@ -112,7 +145,7 @@ namespace NightsLight
                 SizeMode = PictureBoxSizeMode.Normal,
                 Location = new Point(x, y),
                 Size = new Size(w, h),
-                BackColor = Color.Black
+                BackColor = Color.Transparent
             };
             this.Controls.Add(wall);
 
@@ -128,11 +161,27 @@ namespace NightsLight
                 SizeMode = PictureBoxSizeMode.Normal,
                 Location = new Point(x, y),
                 Size = new Size(w, h),
-                BackColor = Color.Red
+                BackColor = Color.Transparent
             };
             this.Controls.Add(goal);
 
             return goal;
+        }
+
+        private PictureBox AddTraps(int x, int y, int w, int h, string s)
+        {
+            PictureBox trap = new PictureBox
+            {
+                Name = s,
+                Tag = s,
+                SizeMode = PictureBoxSizeMode.Normal,
+                Location = new Point(x, y),
+                Size = new Size(w, h),
+                BackColor = Color.Yellow
+            };
+            this.Controls.Add(trap);
+
+            return trap;
         }
 
         private void InitializeTimer()
@@ -171,11 +220,13 @@ namespace NightsLight
             }
 
             // If collision PictureBox did not collide with any elements, pass its Location to the player.
-            if(IsCollision(playerMovement) == false)
+            if (IsCollision(playerMovement) == false)
             {
-                if (maze.Count == 0)
+                if (changedLevel)
                 {
                     this.player.Location = new Point(0, 0);
+                    changedLevel = false;
+                    playerMovement.Location = new Point(0, 0);
                 }
                 else
                 {
@@ -192,33 +243,45 @@ namespace NightsLight
 
             foreach (Control c in this.Controls)
             {
-                if ((c is PictureBox) && ((string)c.Tag == "wall"))
+                if ((c is PictureBox) && ((string)c.Tag == "wall") && (p.Bounds.IntersectsWith(c.Bounds)))
                 {
-                    if (p.Bounds.IntersectsWith(c.Bounds))
-                    {
-                        hit = true;
-                        break;
-                    }
+                    hit = true;
+
+                    break;
                 }
-                if ((c is PictureBox) && ((string)c.Tag == "goal"))
+                if ((c is PictureBox) && ((string)c.Tag == "slow") && (slowTriggered == false) && (p.Bounds.IntersectsWith(c.Bounds)))
                 {
-                    if (p.Bounds.IntersectsWith(c.Bounds))
+                    // Delay player's speed.
+                    playerSpeed = 1;
+                    slowTriggered = true;
+
+                    // Create a task thread that will delay setting the playerSpeed back to normal.
+                    Task.Delay(5000).ContinueWith((_) =>
                     {
-                        //SoundPlayer simpleSound = new SoundPlayer(Program.currentDirectory + "/Assets/Audio/LevelComplete.wav");
-                        //simpleSound.Play();
+                        playerSpeed = 8;
+                        slowTriggered = false;
+                    });
 
-                        mazeLevel += 1;
-                        maze.RemoveAll(isWall);
+                    break;
+                }
+                if ((c is PictureBox) && ((string)c.Tag == "goal") && (p.Bounds.IntersectsWith(c.Bounds)))
+                {
+                    mazeLevel += 1;
+                    maze.RemoveAll(isWall);
 
-                        for(int i = this.Controls.Count - 1; i > 0; i--)
-                        {
-                            this.Controls.RemoveAt(i);
-                        }
-
-                        LoadMaze();
-
-                        break;
+                    for (int i = this.Controls.Count - 1; i > 0; i--)
+                    {
+                        this.Controls.RemoveAt(i);
                     }
+
+                    SoundPlayer simpleSound = new SoundPlayer(Program.currentDirectory + "/Assets/Audio/LevelComplete.wav");
+                    simpleSound.Play();
+
+                    // Make the current thread sleep to give way for the level clear sound effects.
+                    System.Threading.Thread.Sleep(3050);
+                    LoadMaze();
+
+                    break;
                 }
             }
 
