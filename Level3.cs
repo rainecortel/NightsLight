@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Media;
 using System.Text;
@@ -16,7 +17,7 @@ namespace NightsLight
         private Timer playerMovementTimer;
 
         private int mazeLevel;
-        private bool moveUp, moveDown, moveLeft, moveRight, changedLevel, slowTriggered;
+        private bool moveUp, moveDown, moveLeft, moveRight, changedLevel, slowTriggered, resetTriggered;
         private int playerSpeed;
 
         public Level3()
@@ -40,7 +41,7 @@ namespace NightsLight
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Size = new Size(1000, 715);
-            this.StartPosition = FormStartPosition.Manual;
+            this.StartPosition = FormStartPosition.CenterScreen;
             this.WindowState = FormWindowState.Normal;
 
             // Define maze initial attributes.
@@ -49,6 +50,7 @@ namespace NightsLight
             this.playerSpeed = 8;
             this.changedLevel = false;
             this.slowTriggered = false;
+            this.resetTriggered = false;
 
             InitializePlayer();
             LoadMaze();
@@ -64,7 +66,7 @@ namespace NightsLight
                 SizeMode = PictureBoxSizeMode.AutoSize,
                 Location = new Point(0, 0),
                 Image = Image.FromFile(Program.currentDirectory + "/Assets/Player/character_01.png"),
-                BackColor = Color.DarkBlue
+                BackColor = Color.Transparent
             };
             this.Controls.Add(player); // Adds the player sprite to the screen.
         }
@@ -116,14 +118,25 @@ namespace NightsLight
                         new int[]{505, 591, 115, 19}, new int[]{797, 591, 118, 19}, new int[]{601, 492, 215, 19}, new int[]{896, 492, 90, 19},
                      };
 
-                    maze.Add(AddTraps(482, 185, 66, 66, "slow"));
-                    maze.Add(AddTraps(664, 0, 91, 65, "reset"));
+                    maze.Add(AddTraps(490, 185, 45, 66, "slow"));
+                    maze.Add(AddTraps(690, 0, 40, 65, "reset"));
 
                     maze.Add(AddGoal(965, 238, 20, 53));
 
                     break;
                 default:
                     break;
+            }
+
+            if(mazeLevel > 2)
+            {
+                Console.WriteLine(Program.GetCurrentTime() + " - Level 3 completed.");
+
+                // Load main menu form when exiting this level.
+                Program.getGameMenuForm().Show();
+
+                // Close this form.
+                this.Close();
             }
 
             if(walls.Count > 0)
@@ -177,7 +190,7 @@ namespace NightsLight
                 SizeMode = PictureBoxSizeMode.Normal,
                 Location = new Point(x, y),
                 Size = new Size(w, h),
-                BackColor = Color.Yellow
+                BackColor = Color.Transparent
             };
             this.Controls.Add(trap);
 
@@ -220,9 +233,9 @@ namespace NightsLight
             }
 
             // If collision PictureBox did not collide with any elements, pass its Location to the player.
-            if (IsCollision(playerMovement) == false)
+            if(IsCollision(playerMovement) == false)
             {
-                if (changedLevel)
+                if(changedLevel)
                 {
                     this.player.Location = new Point(0, 0);
                     changedLevel = false;
@@ -230,6 +243,12 @@ namespace NightsLight
                 }
                 else
                 {
+                    if (resetTriggered)
+                    {
+                        playerMovement.Location = new Point(0, 322);
+                        resetTriggered = false;
+                    }
+
                     player.Location = playerMovement.Location;
                 }
             }
@@ -264,16 +283,43 @@ namespace NightsLight
 
                     break;
                 }
+                if ((c is PictureBox) && ((string)c.Tag == "reset") && (resetTriggered == false) &&  (p.Bounds.IntersectsWith(c.Bounds)))
+                {
+                    Console.WriteLine("test");
+                    resetTriggered = true;
+
+                    // Sound effect for death.
+                    SoundPlayer simpleSound = new SoundPlayer(Program.currentDirectory + "/Assets/Audio/Death.wav");
+                    simpleSound.Play();
+
+                    System.Threading.Thread.Sleep(1000);
+
+                    break;
+                }
                 if ((c is PictureBox) && ((string)c.Tag == "goal") && (p.Bounds.IntersectsWith(c.Bounds)))
                 {
                     mazeLevel += 1;
                     maze.RemoveAll(isWall);
 
+                    // Remove all controls in the form except the player.
                     for (int i = this.Controls.Count - 1; i > 0; i--)
                     {
                         this.Controls.RemoveAt(i);
                     }
 
+                    // Display level complete text.
+                    PictureBox levelCompleted = new PictureBox
+                    {
+                        BackColor = Color.Black,
+                        BackgroundImage = Image.FromFile(Program.currentDirectory + "/Assets/Images/Level3_LevelCompleted.png"),
+                        BackgroundImageLayout = ImageLayout.Zoom,
+                        Size = new Size(900, 153),
+                        SizeMode = PictureBoxSizeMode.CenterImage
+                    };
+                    levelCompleted.Location = new Point((this.Width / 2) - (levelCompleted.Width / 2), (this.Height / 2) - (levelCompleted.Height / 2) - 25);
+                    //this.Controls.Add(levelCompleted);
+
+                    // Sound effect for level clear.
                     SoundPlayer simpleSound = new SoundPlayer(Program.currentDirectory + "/Assets/Audio/LevelComplete.wav");
                     simpleSound.Play();
 
@@ -302,7 +348,7 @@ namespace NightsLight
             this.KeyUp += KeyUpEvent;
 
             // Add event to catch form closing.
-            //this.FormClosing += FormClosingEvent;
+            this.FormClosing += FormClosingEvent;
         }
 
         private void KeyDownEvent(object sender, KeyEventArgs e)

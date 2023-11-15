@@ -19,14 +19,11 @@ namespace NightsLight
         {
             thread = new Thread(() =>
             {
-                //gameMenu = new GameMenu();
+                gameMenu = new GameMenu();
 
                 // Used for catching the closing event game log.
-                //Application.ApplicationExit += new EventHandler(gameMenu.OnApplicationExit);
-                //Application.Run(gameMenu);
-
-                Level3 level3Form = new Level3();
-                Application.Run(level3Form);
+                Application.ApplicationExit += new EventHandler(gameMenu.OnApplicationExit);
+                Application.Run(gameMenu);
             });
             thread.IsBackground = false;
             thread.Start();
