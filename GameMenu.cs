@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing;
+using NightsLight_Maze;
 
 namespace NightsLight
 {
@@ -72,7 +73,7 @@ namespace NightsLight
             btExit.ForeColor = Color.Transparent;
             btExit.BackColor = Color.Transparent;
             btExit.FlatAppearance.BorderSize = 0;
-            this.Controls.Add(btExit);            
+            this.Controls.Add(btExit);
 
             btPlay.Click += new EventHandler(btPlay_Click);
             btLeaderboards.Click += new EventHandler(btLeaderboards_Click);
@@ -98,8 +99,8 @@ namespace NightsLight
             //Level1 level1Form = new Level1();
             //level1Form.Show();
 
-            Level3 level3Form = new Level3();
-            level3Form.Show();
+            Level2 level2Form = new Level2();
+            level2Form.Show();
         }
 
         private void btLeaderboards_Click(object sender, EventArgs e)
