@@ -52,7 +52,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Level2.cs">
-      <SubType>Form</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Level1.cs">
       <SubType>Form</SubType>
