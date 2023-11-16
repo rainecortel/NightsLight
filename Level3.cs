@@ -46,7 +46,7 @@ namespace NightsLight
 
             // Define maze initial attributes.
             this.maze = new List<PictureBox>();
-            this.mazeLevel = 2;
+            this.mazeLevel = 1;
             this.playerSpeed = 8;
             this.changedLevel = false;
             this.slowTriggered = false;
