@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -98,8 +98,8 @@ namespace NightsLight
             //Level1 level1Form = new Level1();
             //level1Form.Show();
 
-            Level3 level3Form = new Level3();
-            level3Form.Show();
+            Level2 level2Form = new Level2();
+            level2Form.Show();
         }
 
         private void btLeaderboards_Click(object sender, EventArgs e)
