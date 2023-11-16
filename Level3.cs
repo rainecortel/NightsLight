@@ -46,7 +46,7 @@ namespace NightsLight
 
             // Define maze initial attributes.
             this.maze = new List<PictureBox>();
-            this.mazeLevel = 1;
+            this.mazeLevel = 2;
             this.playerSpeed = 8;
             this.changedLevel = false;
             this.slowTriggered = false;
@@ -88,12 +88,16 @@ namespace NightsLight
                         new int[]{445, 560, 90, 23}, new int[]{513, 90, 372, 23}, new int[]{585, 425, 90, 23}, new int[]{655, 225, 90, 23},
                         new int[]{655, 560, 90, 23}, new int[]{793, 358, 90, 23}, new int[]{866, 225, 120, 23}, new int[]{862, 493, 120, 23},
                         new int[]{163, 0, 23, 382}, new int[]{93, 360, 23, 90}, new int[]{304, 72, 23, 600}, new int[]{445, 158, 23, 420},
-                        new int[]{513, 90, 23, 91}, new int[]{652, 225, 23, 358}, new int[]{723, 560, 23, 120}, new int[]{862, 225, 23, 156}
+                        new int[]{513, 90, 23, 91}, new int[]{652, 225, 23, 358}, new int[]{862, 225, 23, 156}
                      };
 
                     // Add level traps.
                     maze.Add(AddTraps(230, 600, 50, 75, "slow"));
                     maze.Add(AddTraps(900, 255, 80, 70, "slow"));
+                    maze.Add(AddTraps(553, 528, 56, 51, "slow"));
+                    maze.Add(AddTraps(0, 615, 22, 48, "reset"));
+                    maze.Add(AddTraps(361, 292, 48, 28, "reset"));
+                    maze.Add(AddTraps(722, 614, 28, 48, "reset"));
 
                     // Add level goal.
                     maze.Add(AddGoal(960, 600, 20, 70));
@@ -115,11 +119,18 @@ namespace NightsLight
                         new int[]{0, 300, 81, 23}, new int[]{261, 257, 114, 19}, new int[]{458, 257, 114, 19}, new int[]{653, 257, 65, 19}, 
                         new int[]{898, 300, 82, 19}, new int[]{161, 398, 166, 19}, new int[]{308, 352, 67, 19}, new int[]{505, 352, 113, 19}, 
                         new int[]{797, 398, 67, 19}, new int[]{161, 492, 166, 19}, new int[]{308, 539, 118, 19}, new int[]{407, 449, 117, 19},
-                        new int[]{505, 591, 115, 19}, new int[]{797, 591, 118, 19}, new int[]{601, 492, 215, 19}, new int[]{896, 492, 90, 19},
+                        new int[]{505, 591, 115, 19}, new int[]{797, 591, 118, 19}, new int[]{601, 492, 215, 19}
                      };
 
-                    maze.Add(AddTraps(490, 185, 45, 66, "slow"));
-                    maze.Add(AddTraps(690, 0, 40, 65, "reset"));
+                    maze.Add(AddTraps(12, 491, 35, 37, "slow"));
+                    maze.Add(AddTraps(389, 191, 35, 37, "slow"));
+                    maze.Add(AddTraps(538, 616, 35, 51, "slow"));
+                    maze.Add(AddTraps(497, 0, 30, 24, "reset"));
+                    maze.Add(AddTraps(761, 106, 30, 30, "reset"));
+                    maze.Add(AddTraps(498, 201, 30, 30, "reset"));
+                    maze.Add(AddTraps(320, 297, 30, 30, "reset"));
+                    maze.Add(AddTraps(680, 0, 58, 65, "lava"));
+                    maze.Add(AddTraps(916, 515, 61, 70, "lava"));
 
                     maze.Add(AddGoal(965, 238, 20, 53));
 
@@ -243,9 +254,17 @@ namespace NightsLight
                 }
                 else
                 {
-                    if (resetTriggered)
+                    if(resetTriggered)
                     {
-                        playerMovement.Location = new Point(0, 322);
+                        if(mazeLevel == 1)
+                        {
+                            playerMovement.Location = new Point(0, 0);
+                        }
+                        else if(mazeLevel == 2)
+                        {
+                            playerMovement.Location = new Point(0, 325);
+                        }
+                        
                         resetTriggered = false;
                     }
 
@@ -271,7 +290,7 @@ namespace NightsLight
                 if ((c is PictureBox) && ((string)c.Tag == "slow") && (slowTriggered == false) && (p.Bounds.IntersectsWith(c.Bounds)))
                 {
                     // Delay player's speed.
-                    playerSpeed = 1;
+                    playerSpeed = 2;
                     slowTriggered = true;
 
                     // Create a task thread that will delay setting the playerSpeed back to normal.
@@ -285,14 +304,35 @@ namespace NightsLight
                 }
                 if ((c is PictureBox) && ((string)c.Tag == "reset") && (resetTriggered == false) &&  (p.Bounds.IntersectsWith(c.Bounds)))
                 {
-                    Console.WriteLine("test");
                     resetTriggered = true;
 
                     // Sound effect for death.
-                    SoundPlayer simpleSound = new SoundPlayer(Program.currentDirectory + "/Assets/Audio/Death.wav");
+                    SoundPlayer simpleSound = new SoundPlayer(Program.currentDirectory + "/Assets/Audio/PressurePlate.wav");
+                    simpleSound.Play();
+
+                    System.Threading.Thread.Sleep(500);
+
+                    break;
+                }
+                if ((c is PictureBox) && ((string)c.Tag == "lava") && (resetTriggered == false) && (p.Bounds.IntersectsWith(c.Bounds)))
+                {
+                    mazeLevel -= 1;
+                    maze.RemoveAll(isWall);
+
+                    // Remove all controls in the form except the player.
+                    for (int i = this.Controls.Count - 1; i > 0; i--)
+                    {
+                        this.Controls.RemoveAt(i);
+                    }
+
+                    // Sound effect for death.
+                    SoundPlayer simpleSound = new SoundPlayer(Program.currentDirectory + "/Assets/Audio/Lava.wav");
                     simpleSound.Play();
 
                     System.Threading.Thread.Sleep(1000);
+                    LoadMaze();
+                    this.player.Location = new Point(0, 0);
+                    changedLevel = true;
 
                     break;
                 }
@@ -308,7 +348,7 @@ namespace NightsLight
                     }
 
                     // Display level complete text.
-                    PictureBox levelCompleted = new PictureBox
+                    /*PictureBox levelCompleted = new PictureBox
                     {
                         BackColor = Color.Black,
                         BackgroundImage = Image.FromFile(Program.currentDirectory + "/Assets/Images/Level3_LevelCompleted.png"),
@@ -316,7 +356,7 @@ namespace NightsLight
                         Size = new Size(900, 153),
                         SizeMode = PictureBoxSizeMode.CenterImage
                     };
-                    levelCompleted.Location = new Point((this.Width / 2) - (levelCompleted.Width / 2), (this.Height / 2) - (levelCompleted.Height / 2) - 25);
+                    levelCompleted.Location = new Point((this.Width / 2) - (levelCompleted.Width / 2), (this.Height / 2) - (levelCompleted.Height / 2) - 25);*/
                     //this.Controls.Add(levelCompleted);
 
                     // Sound effect for level clear.
@@ -348,7 +388,7 @@ namespace NightsLight
             this.KeyUp += KeyUpEvent;
 
             // Add event to catch form closing.
-            this.FormClosing += FormClosingEvent;
+            //this.FormClosing += FormClosingEvent;
         }
 
         private void KeyDownEvent(object sender, KeyEventArgs e)
@@ -357,19 +397,19 @@ namespace NightsLight
             playerMovementTimer.Enabled = true; 
 
             // Key press events to trigger.
-            if(e.KeyCode == Keys.Up)
+            if(e.KeyCode == Keys.W)
             {
                 moveUp = true;
             }
-            if(e.KeyCode == Keys.Down)
+            if(e.KeyCode == Keys.S)
             {
                 moveDown = true;
             }
-            if(e.KeyCode == Keys.Left)
+            if(e.KeyCode == Keys.A)
             {
                 moveLeft = true;
             }
-            if(e.KeyCode == Keys.Right)
+            if(e.KeyCode == Keys.D)
             {
                 moveRight = true;
             }
@@ -381,19 +421,19 @@ namespace NightsLight
             // When key is released, movement stops.
             playerMovementTimer.Enabled = false;
 
-            if (e.KeyCode == Keys.Up)
+            if (e.KeyCode == Keys.W)
             {
                 moveUp = false;
             }
-            if (e.KeyCode == Keys.Down)
+            if (e.KeyCode == Keys.S)
             {
                 moveDown = false;
             }
-            if (e.KeyCode == Keys.Left)
+            if (e.KeyCode == Keys.A)
             {
                 moveLeft = false;
             }
-            if (e.KeyCode == Keys.Right)
+            if (e.KeyCode == Keys.D)
             {
                 moveRight = false;
             }
