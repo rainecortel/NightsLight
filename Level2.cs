@@ -389,13 +389,13 @@ namespace NightsLight
                 if ((c is PictureBox) && ((string)c.Tag == "slow") && (slowTriggered == false) && (p.Bounds.IntersectsWith(c.Bounds)))
                 {
                     // Delay MazePlayer's speed.
-                    MazePlayer.Speed = 2;
+                    MazePlayer.ChangeSpeed(2);
                     slowTriggered = true;
 
                     // Create a task thread that will delay setting the MazePlayer's speed back to normal.
                     Task.Delay(5000).ContinueWith((_) =>
                     {
-                        MazePlayer.Speed = 8;
+                        MazePlayer.ChangeSpeed(5);
                         slowTriggered = false;
                     });
                 }

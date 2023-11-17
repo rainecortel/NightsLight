@@ -69,10 +69,5 @@
   <ItemGroup>
     <Folder Include="Assets\Images\" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Level3.resx">
-      <DependentUpon>Level3.cs</DependentUpon>
-    </EmbeddedResource>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
