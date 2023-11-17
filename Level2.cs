@@ -10,7 +10,8 @@ using System.Windows.Forms;
 
 namespace NightsLight
 {
-    public class Player : PictureBox
+    // Abstract class representing game object for MazePlayer only
+    public abstract class GameObject : PictureBox
     {
         public int Speed { get; set; }
         public bool MoveUp { get; set; }
@@ -18,20 +19,24 @@ namespace NightsLight
         public bool MoveLeft { get; set; }
         public bool MoveRight { get; set; }
 
-        public Player()
+        public abstract void ChangeSpeed(int speed);
+    }
+    public class MazePlayer : GameObject
+    {
+        public MazePlayer()
         {
-            // Initialize Player properties.
-            this.Name = "player";
+            // Initialize MazePlayer properties.
+            this.Name = "MazePlayer";
             this.BackColor = Color.Transparent;
-            this.Image = Image.FromFile(Program.currentDirectory + "/Assets/Player/character_01.png");
+            this.Image = Image.FromFile(Program.currentDirectory + "/Assets/MazePlayer/character_1.png");
             this.SizeMode = PictureBoxSizeMode.AutoSize;
             this.Location = new Point(0, 0); // Set initial location. Location adjusts in the code.
 
-            // Define Player initial attributes.
-            Speed = 8;
+            // Define MazePlayer initial attributes.
+            Speed = 5;
         }
 
-        // Set which move was triggered by the player.
+        // Set which move was triggered by the MazePlayer.
         public void MoveLocation(Keys keyCode, string eventName)
         {
             if (eventName == "KeyDown")
@@ -76,8 +81,8 @@ namespace NightsLight
             }
         }
 
-        // Change Player's speed.
-        public void ChangeSpeed(int speed)
+        // Change MazePlayer's speed.
+        public override void ChangeSpeed(int speed)
         {
             Speed = speed;
         }
@@ -130,10 +135,11 @@ namespace NightsLight
 
     internal class Level2 : Form
     {
-        private Player player;
+        private MazePlayer MazePlayer;
         private Maze maze;
         private Timer timer;
 
+        private int playerSpriteImage;
         private bool slowTriggered;
 
         public Level2()
@@ -161,12 +167,13 @@ namespace NightsLight
             this.WindowState = FormWindowState.Normal;
 
             // Define Level2 initial attributes.
-            player = new Player();
+            MazePlayer = new MazePlayer();
             maze = new Maze(1);
             timer = new Timer();
+            playerSpriteImage = 1;
             slowTriggered = false;
 
-            this.Controls.Add(player); // Adds the player sprite to the screen.
+            this.Controls.Add(MazePlayer); // Adds the MazePlayer sprite to the screen.
 
             LoadMaze();
             InitializeEvents();
@@ -202,10 +209,10 @@ namespace NightsLight
                         walls = new List<int[]>
                         {
                             new int[] {0, 225, 47, 23}, new int[] {0, 561, 47, 23}, new int[] {93, 90, 90, 23}, new int[] {93, 359, 90, 23},
-                            new int[] {163, 561, 160, 23}, new int[] {445, 158, 90, 23}, new int[] {445, 292, 90, 23}, new int[] {445, 560, 90, 23}, 
-                            new int[] {513, 90, 372, 23}, new int[] {585, 425, 90, 23}, new int[] {655, 225, 90, 23}, new int[] {655, 560, 90, 23}, 
-                            new int[] {793, 358, 90, 23}, new int[] {866, 225, 120, 23}, new int[] {862, 493, 120, 23}, new int[] {163, 0, 23, 382}, 
-                            new int[] {93, 360, 23, 90}, new int[] {304, 72, 23, 600}, new int[] {445, 158, 23, 420}, new int[] {513, 90, 23, 91}, 
+                            new int[] {163, 561, 160, 23}, new int[] {445, 158, 90, 23}, new int[] {445, 292, 90, 23}, new int[] {445, 560, 90, 23},
+                            new int[] {513, 90, 372, 23}, new int[] {585, 425, 90, 23}, new int[] {655, 225, 90, 23}, new int[] {655, 560, 90, 23},
+                            new int[] {793, 358, 90, 23}, new int[] {866, 225, 120, 23}, new int[] {862, 493, 120, 23}, new int[] {163, 0, 23, 382},
+                            new int[] {93, 360, 23, 90}, new int[] {304, 90, 23, 600}, new int[] {445, 158, 23, 420}, new int[] {513, 90, 23, 91},
                             new int[] {652, 225, 23, 358}, new int[] {862, 225, 23, 156}
                          };
 
@@ -278,10 +285,10 @@ namespace NightsLight
 
         private void KeyDownEvent(object sender, KeyEventArgs e)
         {
-            // Enable player movement time to allow moving.
+            // Enable MazePlayer movement time to allow moving.
             timer.Enabled = true;
 
-            player.MoveLocation(e.KeyCode, "KeyDown");
+            MazePlayer.MoveLocation(e.KeyCode, "KeyDown");
         }
 
         private void KeyUpEvent(object sender, KeyEventArgs e)
@@ -289,48 +296,80 @@ namespace NightsLight
             // When key is released, movement stops.
             timer.Enabled = false;
 
-            player.MoveLocation(e.KeyCode, "KeyUp");
+            MazePlayer.MoveLocation(e.KeyCode, "KeyUp");
         }
 
         private void SetTimer()
         {
-            timer.Interval = 20; // Lower interval equals faster movement.
-            timer.Tick += new EventHandler(MovePlayer);
+            timer.Interval = 60; // Lower interval equals faster movement.
+            timer.Tick += new EventHandler(MoveMazePlayer);
         }
 
-        private void MovePlayer(object sender, EventArgs e)
+        private void MoveMazePlayer(object sender, EventArgs e)
         {
             // Make a new PictureBox to detect the change in location and used for collision testing.
             PictureBox movement = new PictureBox
             {
-                Location = player.Location,
-                Size = player.Size,
+                Location = MazePlayer.Location,
+                Size = MazePlayer.Size,
                 BackColor = Color.Transparent
             };
             this.Controls.Add(movement); // Add PictureBox to controls.
 
-            if (player.MoveUp && player.Top > 0)
+            // Update MazePlayer image.
+            if (playerSpriteImage > 16)
             {
-                movement.Top -= player.Speed;
-            }
-            if (player.MoveDown && player.Top < 612)
-            {
-                movement.Top += player.Speed;
-            }
-            if (player.MoveLeft && player.Left > 0)
-            {
-                movement.Left -= player.Speed;
-            }
-            if (player.MoveRight && player.Left < 928)
-            {
-                movement.Left += player.Speed;
+                playerSpriteImage = 1;
             }
 
-            // Check for collison between Player and Maze elements.
+            if (MazePlayer.MoveUp && MazePlayer.Top > 0)
+            {
+                movement.Top -= MazePlayer.Speed;
+
+                playerSpriteImage++;
+                if (!(playerSpriteImage > 12 && playerSpriteImage <= 16))
+                {
+                    playerSpriteImage = 13;
+                }
+            }
+            if (MazePlayer.MoveDown && MazePlayer.Top < 612)
+            {
+                movement.Top += MazePlayer.Speed;
+
+                playerSpriteImage++;
+                if (playerSpriteImage > 4)
+                {
+                    playerSpriteImage = 1;
+                }
+            }
+            if (MazePlayer.MoveLeft && MazePlayer.Left > 0)
+            {
+                movement.Left -= MazePlayer.Speed;
+
+                playerSpriteImage++;
+                if (!(playerSpriteImage > 4 && playerSpriteImage <= 8))
+                {
+                    playerSpriteImage = 5;
+                }
+            }
+            if (MazePlayer.MoveRight && MazePlayer.Left < 928)
+            {
+                movement.Left += MazePlayer.Speed;
+
+                playerSpriteImage++;
+                if (!(playerSpriteImage > 8 && playerSpriteImage <= 12))
+                {
+                    playerSpriteImage = 9;
+                }
+            }
+
+            // Check for collison between MazePlayer and Maze elements.
             CheckForCollision(ref movement);
 
-            // Update the location of Player based on collision results.
-            player.Location = movement.Location;
+            MazePlayer.Image = Image.FromFile(Program.currentDirectory + "/Assets/MazePlayer/character_" + playerSpriteImage + ".png");
+
+            // Update the location of MazePlayer based on collision results.
+            MazePlayer.Location = movement.Location;
 
             this.Controls.Remove(movement); // Remove PictureBox after using it.
         }
@@ -342,26 +381,26 @@ namespace NightsLight
                 // If collision is with wall, prevent the next movement.
                 if ((c is PictureBox) && ((string)c.Tag == "wall") && (p.Bounds.IntersectsWith(c.Bounds)))
                 {
-                    p.Location = player.Location;
+                    p.Location = MazePlayer.Location;
                     break;
                 }
 
                 // If collision is with stone, slow the movement speed.
                 if ((c is PictureBox) && ((string)c.Tag == "slow") && (slowTriggered == false) && (p.Bounds.IntersectsWith(c.Bounds)))
                 {
-                    // Delay player's speed.
-                    player.Speed = 2;
+                    // Delay MazePlayer's speed.
+                    MazePlayer.Speed = 2;
                     slowTriggered = true;
 
-                    // Create a task thread that will delay setting the player's speed back to normal.
+                    // Create a task thread that will delay setting the MazePlayer's speed back to normal.
                     Task.Delay(5000).ContinueWith((_) =>
                     {
-                        player.Speed = 8;
+                        MazePlayer.Speed = 8;
                         slowTriggered = false;
                     });
                 }
 
-                // If collision is with pressure plate, return the player to starting point (if level 1) or to teleporter area (if level 2).
+                // If collision is with pressure plate, return the MazePlayer to starting point (if level 1) or to teleporter area (if level 2).
                 if ((c is PictureBox) && ((string)c.Tag == "reset") && (p.Bounds.IntersectsWith(c.Bounds)))
                 {
                     // Sound effect for hitting pressure plate.
@@ -383,16 +422,18 @@ namespace NightsLight
                             break;
                     }
 
+                    playerSpriteImage = 1;
+
                     break;
                 }
 
-                // If collision is with lava (only for level 2), return player to level 1's starting point.
+                // If collision is with lava (only for level 2), return MazePlayer to level 1's starting point.
                 if ((c is PictureBox) && ((string)c.Tag == "lava") && (p.Bounds.IntersectsWith(c.Bounds)))
                 {
                     maze.Level = 1;
                     maze.ClearMaze();
 
-                    // Remove all controls in the form except the player.
+                    // Remove all controls in the form except the MazePlayer.
                     for (int i = this.Controls.Count - 1; i > 0; i--)
                     {
                         this.Controls.RemoveAt(i);
